@@ -1,0 +1,65 @@
+body{
+    display: block;
+    background-color: #bdf1e1;
+}
+
+.login{
+    
+    height: min-content;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.login h1{
+    margin-bottom: 25px;
+}
+
+.login form{
+    width: 360px;
+    font-size: 20px;
+}
+
+.login form .form-group{
+    margin-bottom: 12px;
+}
+
+.login form input[type="submit"]{
+    font-size:20px;
+    margin-top:15px
+}
+.back{
+    font-weight: bold;
+    font-size: 25px;
+}
+
+.Imlist {
+    width: 100px;
+    height: 100px;
+}
+
+.custombg {
+    background-color: #d0d0d0;
+}
+
+.Imdesc {
+    margin-top:15px;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.Imattr{
+    width: 300px;
+    margin-top: 15px;
+    margin-left: 20px;
+    background-color: white;
+    justify-content: center;
+    display:flex;
+}
+
+.success {
+    margin-top:15px;
+    margin-bottom:15px;
+    font-weight: bold;
+    font-size: 20px;
+    color: green;
+}
