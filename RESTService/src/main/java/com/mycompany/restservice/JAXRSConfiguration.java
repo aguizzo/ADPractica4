@@ -22,7 +22,7 @@ public class JAXRSConfiguration extends Application {
     }      
 
     private void addRestResourceClasses(Set<Class<?>> resources) {
-    resources.add(com.mycompany.restservice.resources.JavaEE8Resource.class); 
-    //To change body of generated methods, choose Tools | Templates.     }
+        resources.
+            add(com.mycompany.restservice.resources.JavaEE8Resource.class); 
     }   
 }
