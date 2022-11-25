@@ -1,7 +1,14 @@
 package com.mycompany.restservice.resources;
 
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -67,42 +74,65 @@ public class JavaEE8Resource {
         }       
     }
     
-    /**
-     * POST method to register a new image
-     * @param title
-     * @param description
-     * @param keywords
-     * @param author
-     * @param creator
-     * @param capt_date
-     * @param fileName
-     * @return
-     * @throws java.lang.Exception
-     */
-    @Path("register")
+    /** 
+    * POST method to register a new image 
+    * @param title 
+    * @param description 
+    * @param keywords      
+    * @param author 
+    * @param creator 
+    * @param capt_date     
+     * @param filename     
+    * @param fileInputStream     
+    * @param fileMetaData     
+    * @return 
+    */ 
+    @Path("register") 
     @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response registerImage (@FormParam("title") String title,
-        @FormParam("description") String description,
-        @FormParam("keywords") String keywords,
-        @FormParam("author") String author,
-        @FormParam("creator") String creator,
-        @FormParam("capt_date") String capt_date, 
-        @FormParam("fileName") String fileName) throws Exception{
+    @Consumes(MediaType.MULTIPART_FORM_DATA) 
+    @Produces(MediaType.APPLICATION_JSON) 
+    public Response registerImage (@FormDataParam("title") String title, 
+            @FormDataParam("description") String description, 
+            @FormDataParam("keywords") String keywords, 
+            @FormDataParam("author") String author, 
+            @FormDataParam("creator") String creator, 
+            @FormDataParam("capture") String capt_date,
+            @FormDataParam("filename") String filename,
+            @FormDataParam("file") InputStream fileInputStream,
+            @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception{
         Image im = new Image(title, description, keywords, author, creator, 
-            capt_date, "", fileName);
+            capt_date, "", filename);
+        
         boolean registered = iS.imageRegister(im);
-        if (registered) {
-            return Response
-                .ok("ok", MediaType.APPLICATION_JSON)
-                .build();
-        }
-        else {
+        if (!registered) {
             return Response
                 .status(Response.Status.CONFLICT)
                 .build();
-        }   
+        }
+        else{
+            String path = "target/practica2-1.0-SNAPSHOT";
+            String relativePath = "src" + File.separator + "main" + File.separator
+                + "webapp" + File.separator + "images" + File.separator + filename;
+            String uploadedFileLocation = path + relativePath;
+            
+            try {
+                OutputStream out = new FileOutputStream(new File(uploadedFileLocation));
+                int read = 0;
+                byte[] bytes = new byte[1024];
+
+                out = new FileOutputStream(new File(uploadedFileLocation));
+                while ((read = fileInputStream.read(bytes)) != -1) {
+                  out.write(bytes, 0, read);
+            }
+            out.flush();
+            out.close();
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+            return Response
+                     .ok("ok", MediaType.APPLICATION_JSON)
+                     .build(); 
+        }
     }
     
     /**
