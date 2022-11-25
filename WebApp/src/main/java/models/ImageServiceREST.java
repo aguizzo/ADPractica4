@@ -4,7 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.util.List;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
@@ -241,6 +244,57 @@ public class ImageServiceREST implements ImageService {
         finally {
             closeConnection();
         }    
+    }
+    
+    public boolean downloadImage(int id, String filename) {
+        try {
+            String ID = Integer.toString(id);
+            int status = initGETConection("getImage/" + ID);
+            InputStream is = connection.getInputStream();
+            boolean downloaded = downloadFile(is, filename);
+            return downloaded;
+        }
+        catch (Exception e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+        finally {
+            closeConnection();
+        }  
+    }
+    
+    private String getPath(String fileName) {
+        String path = "/home/alumne/images/down/" + fileName;
+        return path;
+    }
+    
+    private boolean downloadFile(InputStream is, String fileName)
+            throws IOException {
+        boolean uploaded = false;
+        String path = getPath(fileName);
+        FileOutputStream fops = null;
+        try {
+            int read;
+            fops = new FileOutputStream(new File(path));
+            final byte[] bytes = new byte[1024];
+            
+            while((read = is.read(bytes)) != -1) {
+                fops.write(bytes, 0, read);
+            }
+            uploaded = true;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally {
+            if (fops != null) {
+                fops.close();
+            }
+            if (is != null) {
+                is.close();
+            }
+        }
+        return uploaded;
     }
     
     private void initPOSTConection(String resource)

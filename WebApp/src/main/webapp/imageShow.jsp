@@ -79,6 +79,15 @@
                 </a>
             </c:if>
         </div>
+        <form 
+           action="ImageDownload" 
+           method="GET" 
+           >
+           <input name="ID" value="${image.id}" hidden>
+           <input name="filename" value="${image.fileName}" hidden>
+           <input class="btn btn-primary"
+                       type="submit" value="Descargar imagen">
+        </form>
         <br>
         <a class="back" href="menu.jsp">Volver al menú</a>
     </body>
