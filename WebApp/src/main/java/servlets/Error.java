@@ -86,6 +86,9 @@ public class Error extends HttpServlet {
             case 27:
                 errorMsg = "El archivo no es de tipo jpeg/jpg.";
                 break;
+            case 28:
+                errorMsg = "Fallo en la descarga de la imagen.";
+                break;
             case 403:
                 errorMsg = "Acceso no autorizado.";
                 break;    

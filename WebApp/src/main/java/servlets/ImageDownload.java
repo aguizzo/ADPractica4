@@ -19,7 +19,7 @@ public class ImageDownload extends HttpServlet {
     
     private final ImageServiceREST iS = ImageServiceREST.getInstance();
 
-    void processRequest(HttpServletRequest request, HttpServletResponse response)
+    void processDownloadRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try {
@@ -28,32 +28,37 @@ public class ImageDownload extends HttpServlet {
             int id  = Integer.parseInt(idParam); 
             File downloaded = iS.downloadImage(id, filename);
             
-            ServletOutputStream out = response.getOutputStream();
-            String mt = new MimetypesFileTypeMap().getContentType(downloaded);
-            response.setContentType(mt);
-            response.setHeader("Content-disposition",
-                "attachment; filename=" +
-                filename);
-            
-            FileInputStream in = new FileInputStream(downloaded);
-            byte[] buffer = new byte[4096];
-            int length;
-            while((length = in.read(buffer)) > 0) {
-                out.write(buffer, 0, length);
+            if (downloaded != null) {
+                ServletOutputStream out = response.getOutputStream();
+                String mt = new MimetypesFileTypeMap().getContentType(downloaded);
+                response.setContentType(mt);
+                response.setHeader("Content-disposition",
+                    "attachment; filename=" +
+                    filename);
+
+                FileInputStream in = new FileInputStream(downloaded);
+                byte[] buffer = new byte[4096];
+                int length;
+                while((length = in.read(buffer)) > 0) {
+                    out.write(buffer, 0, length);
+                }
+                in.close();
+                out.flush();
             }
-            in.close();
-            out.flush();
+            else {
+                response.sendRedirect("Error?code=21");
+            }
         }
         catch (Exception e){
-            System.err.println(e.getMessage());
+            e.printStackTrace();
+            response.sendRedirect("Error?code=0");
         }
     }
 
-   
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        processDownloadRequest(request, response);
     }
 
 }

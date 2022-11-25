@@ -74,8 +74,8 @@ public class ImageRegister extends HttpServlet {
             }
         }
         catch (Exception e) {
-              e.printStackTrace();
-              response.sendRedirect("Error?code=0");
+            e.printStackTrace();
+            response.sendRedirect("Error?code=0");
         }
     }
 
