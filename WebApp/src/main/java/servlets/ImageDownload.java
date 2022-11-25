@@ -1,8 +1,13 @@
 package servlets;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import javax.activation.MimetypesFileTypeMap;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,17 +22,31 @@ public class ImageDownload extends HttpServlet {
     void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
+        try {
             String idParam = request.getParameter("ID");
             String filename = request.getParameter("filename");
             int id  = Integer.parseInt(idParam); 
-            boolean downloaded = iS.downloadImage(id, filename);
-            if (downloaded) {
-                out.println("Funciona!");
+            File downloaded = iS.downloadImage(id, filename);
+            
+            ServletOutputStream out = response.getOutputStream();
+            ServletContext context = getServletConfig().getServletContext();
+            String mt = new MimetypesFileTypeMap().getContentType(downloaded);
+            response.setContentType(mt);
+            response.setHeader("Content-disposition",
+                "attachment; filename=" +
+                filename);
+            FileInputStream in = new FileInputStream(downloaded);
+            byte[] buffer = new byte[4096];
+
+            int length;
+            while((length = in.read(buffer)) > 0) {
+                out.write(buffer, 0, length);
             }
-            else {
-                out.println("Error");
-            }
+            in.close();
+            out.flush();
+        }
+        catch (Exception e){
+            System.err.println(e.getMessage());
         }
     }
 
