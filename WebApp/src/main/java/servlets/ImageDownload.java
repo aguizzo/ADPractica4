@@ -29,15 +29,14 @@ public class ImageDownload extends HttpServlet {
             File downloaded = iS.downloadImage(id, filename);
             
             ServletOutputStream out = response.getOutputStream();
-            ServletContext context = getServletConfig().getServletContext();
             String mt = new MimetypesFileTypeMap().getContentType(downloaded);
             response.setContentType(mt);
             response.setHeader("Content-disposition",
                 "attachment; filename=" +
                 filename);
+            
             FileInputStream in = new FileInputStream(downloaded);
             byte[] buffer = new byte[4096];
-
             int length;
             while((length = in.read(buffer)) > 0) {
                 out.write(buffer, 0, length);

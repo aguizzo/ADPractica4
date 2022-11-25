@@ -276,35 +276,6 @@ public class ImageServiceREST implements ImageService {
         return path;
     }
     
-    private boolean downloadFile(InputStream is, String fileName)
-            throws IOException {
-        boolean uploaded = false;
-        String path = getPath(fileName);
-        FileOutputStream fops = null;
-        try {
-            int read;
-            fops = new FileOutputStream(new File(path));
-            final byte[] bytes = new byte[1024];
-            
-            while((read = is.read(bytes)) != -1) {
-                fops.write(bytes, 0, read);
-            }
-            uploaded = true;
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        finally {
-            if (fops != null) {
-                fops.close();
-            }
-            if (is != null) {
-                is.close();
-            }
-        }
-        return uploaded;
-    }
-    
     private void initPOSTConection(String resource)
         throws MalformedURLException{
         try {

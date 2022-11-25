@@ -62,6 +62,16 @@
             <p>Subida por <b>${image.uploader}</b> en ${image.storageDate}</p>
         
             <img src="./images/${image.fileName}" alt="error">
+            <form
+               class="Imdesc"
+               action="ImageDownload" 
+               method="GET" 
+               >
+               <input name="ID" value="${image.id}" hidden>
+               <input name="filename" value="${image.fileName}" hidden>
+               <input class="btn btn-primary"
+                    type="submit" value="Descargar imagen">
+            </form>
             <p class="Imdesc">Descripción:</p>
                 <p class="Imattr">${image.description}</p>
             <p class="Imdesc">Autor de la imagen:</p>
@@ -78,16 +88,8 @@
                     Modificar Imagen
                 </a>
             </c:if>
-        </div>
-        <form 
-           action="ImageDownload" 
-           method="GET" 
-           >
-           <input name="ID" value="${image.id}" hidden>
-           <input name="filename" value="${image.fileName}" hidden>
-           <input class="btn btn-primary"
-                       type="submit" value="Descargar imagen">
-        </form>
+            </div>
+        
         <br>
         <a class="back" href="menu.jsp">Volver al menú</a>
     </body>
