@@ -104,7 +104,7 @@
                     </label>
                     <input class="form-control"
                            type="file"
-                           name="image">
+                           name="image" required>
                 </div>
                 <input class="btn btn-primary"
                        type="submit" value="Subir imagen">

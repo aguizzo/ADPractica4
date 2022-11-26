@@ -20,6 +20,18 @@ import models.Image;
 import models.ImageService;
 import models.ImageServiceREST;
 
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+
 @WebServlet(name = "ImageRegister", urlPatterns = {"/ImageRegister"})
 @MultipartConfig
 public class ImageRegister extends HttpServlet {
@@ -37,40 +49,37 @@ public class ImageRegister extends HttpServlet {
             String author = request.getParameter("author");
             String uploader = user.getUsername();
             String captureDate = request.getParameter("captureDate");
-            String fileName = "placeholder.jpg";
-            /*
             Part part = request.getPart("image");
             String contentType = part.getContentType();
-            if (contentType.equals("image/jpeg")) {
+            
+            if (contentType.equals("image/jpeg")) { 
                 String fileName = part.getSubmittedFileName();
-                boolean uploaded = uploadFile(part, fileName);
-                if(uploaded) {
-                    Image image = new Image(title, description, keywords, author,
-                        uploader, captureDate, storageDate, fileName);
-                    boolean registered = iS.imageRegister(image);
-                    if (registered) {
-                        response.sendRedirect("imageRegister.jsp?success=1");
-                    }
-                    else {
-                        response.sendRedirect("Error?code=21");
-                    }
-                }
-                else {
-                    response.sendRedirect("Error?code=22");
-                }     
-            }
+                 
+                final Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
+
+                StreamDataBodyPart filePart = new StreamDataBodyPart("file", part.getInputStream());
+                FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
+                final FormDataMultiPart multipart = (FormDataMultiPart) formDataMultiPart
+                        .field("title", title, MediaType.TEXT_PLAIN_TYPE)
+                        .field("description", description, MediaType.TEXT_PLAIN_TYPE)
+                        .field("keywords", keywords, MediaType.TEXT_PLAIN_TYPE)
+                        .field("author", author, MediaType.TEXT_PLAIN_TYPE)
+                        .field("uploader", uploader, MediaType.TEXT_PLAIN_TYPE)
+                        .field("capture", captureDate, MediaType.TEXT_PLAIN_TYPE)
+                        .field("filename", fileName, MediaType.TEXT_PLAIN_TYPE)
+                        .bodyPart(filePart);
+
+                final WebTarget target = client.target("http://localhost:8080/RESTService/resources/api/register");
+                final Response resp = target.request().post(Entity.entity(multipart, multipart.getMediaType()));
+
+                //int result = Integer.parseInt(resp.readEntity(String.class));
+
+                formDataMultiPart.close();
+                multipart.close();
+                
+            }  
             else {
                 response.sendRedirect("Error?code=27");
-            }
-            */
-            Image image = new Image(title, description, keywords, author,
-                uploader, captureDate, "", fileName);
-            boolean registered = iS.imageRegister(image);
-            if (registered) {
-                response.sendRedirect("imageRegister.jsp?success=1");
-            }
-            else {
-                response.sendRedirect("Error?code=21");
             }
         }
         catch (Exception e) {
@@ -116,6 +125,12 @@ public class ImageRegister extends HttpServlet {
         String relativePath = "src" + File.separator + "main" + File.separator
             + "webapp" + File.separator + "images" + File.separator + fileName;
         return path + relativePath;
+    }
+    
+    private String getDate() {
+        String pattern = "yyyy-MM-dd";
+        SimpleDateFormat simpleDate = new SimpleDateFormat(pattern);
+        return simpleDate.format(new Date());
     }
 
     @Override
