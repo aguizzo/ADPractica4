@@ -5,11 +5,14 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.File;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
 import java.util.List;
+import javax.activation.MimetypesFileTypeMap;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -18,6 +21,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -38,6 +42,7 @@ public class JavaEE8Resource {
     private final UserService uS = UserServiceDB.getInstance();
     private final ImageService iS = ImageServiceDB.getInstance();
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final String path = "/home/alumne/images/";
     
     @GET
     public Response ping(){
@@ -236,6 +241,35 @@ public class JavaEE8Resource {
             .ok(json, MediaType.APPLICATION_JSON)
             .build();  
     }
+    
+    /**
+     * GET method to download images by id
+     * @param id
+     * @return 
+     */
+    @Path("getImage/{id}")
+    @GET
+    @Produces("image/*")
+    public Response getImage(@PathParam("id") int id) { 
+        try {
+            Image im = iS.getImage(id);
+            if (im == null)
+                return Response.status(Response.Status.NOT_FOUND).build();
+            String filename = im.getFileName();
+            File f = new File(path + filename);
+            if (!f.exists())
+                return Response.ok("No existe imagen").build();
+            String mt = new MimetypesFileTypeMap().getContentType(f);     
+            return Response.
+                    ok(f, mt).header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=" + filename)
+                    .build();
+        }
+        catch (Exception e) {
+            return Response.ok("Error").build();
+        }
+    }
+    
 
     /**
      * GET method to search images by id

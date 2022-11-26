@@ -4,14 +4,20 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.util.List;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 public class ImageServiceREST implements ImageService {
     
@@ -241,6 +247,33 @@ public class ImageServiceREST implements ImageService {
         finally {
             closeConnection();
         }    
+    }
+    
+    public File downloadImage(int id, String filename) {
+        try {
+            String ID = Integer.toString(id);
+            int status = initGETConection("getImage/" + ID);
+            String path = getPath(filename);
+            InputStream is = connection.getInputStream();
+   
+            File tempFile = File.createTempFile(filename, null);
+            tempFile.deleteOnExit();
+            FileOutputStream out = new FileOutputStream(tempFile);
+            IOUtils.copy(is, out);
+            return tempFile;
+        }
+        catch (Exception e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+        finally {
+            closeConnection();
+        }  
+    }
+    
+    private String getPath(String fileName) {
+        String path = "/home/alumne/images/down/" + fileName;
+        return path;
     }
     
     private void initPOSTConection(String resource)
