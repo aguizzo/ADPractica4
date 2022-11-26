@@ -79,8 +79,46 @@ public class JavaEE8Resource {
         }       
     }
     
+        /**
+     * POST method to register the metada of a image
+     * @param title
+     * @param description
+     * @param keywords
+     * @param author
+     * @param creator
+     * @param capt_date
+     * @param fileName
+     * @return
+     * @throws java.lang.Exception
+     */
+    @Path("register")
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response registerImage (@FormParam("title") String title,
+        @FormParam("description") String description,
+        @FormParam("keywords") String keywords,
+        @FormParam("author") String author,
+        @FormParam("creator") String creator,
+        @FormParam("capt_date") String capt_date, 
+        @FormParam("fileName") String fileName) throws Exception{
+        Image im = new Image(title, description, keywords, author, creator, 
+            capt_date, "", fileName);
+        boolean registered = iS.imageRegister(im);
+        if (registered) {
+            return Response
+                .ok("ok", MediaType.APPLICATION_JSON)
+                .build();
+        }
+        else {
+            return Response
+                .status(Response.Status.CONFLICT)
+                .build();
+        }   
+    }
+    
     /** 
-    * POST method to register a new image 
+    * POST method to register and upload a new image 
     * @param title 
     * @param description 
     * @param keywords      
@@ -92,19 +130,20 @@ public class JavaEE8Resource {
     * @param fileMetaData     
     * @return 
     */ 
-    @Path("register") 
+    @Path("upload") 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA) 
     @Produces(MediaType.APPLICATION_JSON) 
     public Response registerImage (@FormDataParam("title") String title, 
-            @FormDataParam("description") String description, 
-            @FormDataParam("keywords") String keywords, 
-            @FormDataParam("author") String author, 
-            @FormDataParam("uploader") String uploader, 
-            @FormDataParam("capture") String capt_date,
-            @FormDataParam("filename") String filename,
-            @FormDataParam("file") InputStream fileInputStream,
-            @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception{
+        @FormDataParam("description") String description, 
+        @FormDataParam("keywords") String keywords, 
+        @FormDataParam("author") String author, 
+        @FormDataParam("uploader") String uploader, 
+        @FormDataParam("capture") String capt_date,
+        @FormDataParam("filename") String filename,
+        @FormDataParam("file") InputStream fileInputStream,
+        @FormDataParam("file") FormDataContentDisposition fileMetaData)
+        throws Exception {
         Image im = new Image(title, description, keywords, author, uploader, 
             capt_date, "", filename);
         
@@ -115,11 +154,6 @@ public class JavaEE8Resource {
                 .build();
         }
         else{
-            /*String path = "target/practica2-1.0-SNAPSHOT";
-            String relativePath = "src" + File.separator + "main" + File.separator
-                + "webapp" + File.separator + "images" + File.separator + filename;
-            String uploadedFileLocation = path + relativePath;
-            */
             String uploadedFileLocation = "/home/alumne/images/down/" + filename;
             try {
                 OutputStream out;
@@ -254,11 +288,15 @@ public class JavaEE8Resource {
         try {
             Image im = iS.getImage(id);
             if (im == null)
-                return Response.status(Response.Status.NOT_FOUND).build();
+                return Response
+                    .status(Response.Status.NOT_FOUND)
+                    .build();
             String filename = im.getFileName();
             File f = new File(path + filename);
             if (!f.exists())
-                return Response.ok("No existe imagen").build();
+                return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .build();
             String mt = new MimetypesFileTypeMap().getContentType(f);     
             return Response.
                     ok(f, mt).header(HttpHeaders.CONTENT_DISPOSITION,
@@ -266,7 +304,9 @@ public class JavaEE8Resource {
                     .build();
         }
         catch (Exception e) {
-            return Response.ok("Error").build();
+            return Response
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .build();
         }
     }
     

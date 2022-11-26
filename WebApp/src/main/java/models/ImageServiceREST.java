@@ -255,11 +255,14 @@ public class ImageServiceREST implements ImageService {
             int status = initGETConection("getImage/" + ID);
             String path = getPath(filename);
             InputStream is = connection.getInputStream();
-   
-            File tempFile = File.createTempFile(filename, null);
-            tempFile.deleteOnExit();
-            FileOutputStream out = new FileOutputStream(tempFile);
-            IOUtils.copy(is, out);
+            
+            File tempFile = null;
+            if (status == 200) {
+                tempFile = File.createTempFile(filename, null);
+                tempFile.deleteOnExit();
+                FileOutputStream out = new FileOutputStream(tempFile);
+                IOUtils.copy(is, out);
+            }
             return tempFile;
         }
         catch (Exception e) {
