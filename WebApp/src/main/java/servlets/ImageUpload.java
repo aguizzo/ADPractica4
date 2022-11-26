@@ -31,7 +31,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -62,8 +61,12 @@ private final ImageService iS = ImageServiceREST.getInstance();
             
             if (contentType.equals("image/jpeg")) { 
                 String fileName = part.getSubmittedFileName();
+                Image image = new Image(title, description, keywords, author,
+                uploader, captureDate, "", fileName);
+                
+                boolean uploaded = iS.imageUpload(image, part);
                  
-                final Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
+                /*final Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
 
                 StreamDataBodyPart filePart = new StreamDataBodyPart("file", part.getInputStream());
                 FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
@@ -79,11 +82,16 @@ private final ImageService iS = ImageServiceREST.getInstance();
 
                 final WebTarget target = client.target("http://localhost:8080/RESTService/resources/api/upload");
                 final Response resp = target.request().post(Entity.entity(multipart, multipart.getMediaType()));
-
-                //int result = Integer.parseInt(resp.readEntity(String.class));
+                int result = resp.getStatus();
 
                 formDataMultiPart.close();
-                multipart.close();
+                multipart.close();*/
+            if (uploaded) {
+                response.sendRedirect("imageRegister.jsp?success=1");
+            }
+            else {
+                response.sendRedirect("Error?code=21");
+            }
                 
             }  
             else {

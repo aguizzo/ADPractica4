@@ -1,6 +1,8 @@
 package models;
 
+import java.io.File;
 import java.util.List;
+import javax.servlet.http.Part;
 
 public interface ImageService {
 
@@ -24,5 +26,9 @@ public interface ImageService {
     List<Image> searchByAuthor(String author) throws Exception;
     
     List<Image> searchByKeywords(String keywords) throws Exception;
+
+    File downloadImage(int id, String filename) throws Exception;
+
+    boolean imageUpload(Image image, Part part) throws Exception;
     
 }

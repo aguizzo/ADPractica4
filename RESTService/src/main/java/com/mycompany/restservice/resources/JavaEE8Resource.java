@@ -129,12 +129,13 @@ public class JavaEE8Resource {
     * @param fileInputStream     
     * @param fileMetaData     
     * @return 
+     * @throws java.lang.Exception 
     */ 
     @Path("upload") 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA) 
     @Produces(MediaType.APPLICATION_JSON) 
-    public Response registerImage (@FormDataParam("title") String title, 
+    public Response uploadImage (@FormDataParam("title") String title, 
         @FormDataParam("description") String description, 
         @FormDataParam("keywords") String keywords, 
         @FormDataParam("author") String author, 
@@ -154,7 +155,7 @@ public class JavaEE8Resource {
                 .build();
         }
         else{
-            String uploadedFileLocation = "/home/alumne/images/down/" + filename;
+            String uploadedFileLocation = path + filename;
             try {
                 OutputStream out;
                 int read = 0;
@@ -166,8 +167,12 @@ public class JavaEE8Resource {
             }
             out.flush();
             out.close();
-            } catch (IOException e) {
+            } 
+            catch (IOException e) {
               e.printStackTrace();
+              return Response
+                .status(Response.Status.CONFLICT)
+                .build();
             }
             return Response
                      .ok(200, MediaType.APPLICATION_JSON)

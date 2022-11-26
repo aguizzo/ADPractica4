@@ -38,7 +38,7 @@ public class ImageRegister extends HttpServlet {
             String uploader = user.getUsername();
             String captureDate = request.getParameter("captureDate");
             String fileName = "placeholder.jpg";
-
+            
             Image image = new Image(title, description, keywords, author,
                 uploader, captureDate, "", fileName);
             boolean registered = iS.imageRegister(image);
