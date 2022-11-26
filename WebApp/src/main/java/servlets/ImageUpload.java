@@ -63,36 +63,14 @@ private final ImageService iS = ImageServiceREST.getInstance();
                 String fileName = part.getSubmittedFileName();
                 Image image = new Image(title, description, keywords, author,
                 uploader, captureDate, "", fileName);
-                
                 boolean uploaded = iS.imageUpload(image, part);
-                 
-                /*final Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
-
-                StreamDataBodyPart filePart = new StreamDataBodyPart("file", part.getInputStream());
-                FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
-                final FormDataMultiPart multipart = (FormDataMultiPart) formDataMultiPart
-                        .field("title", title, MediaType.TEXT_PLAIN_TYPE)
-                        .field("description", description, MediaType.TEXT_PLAIN_TYPE)
-                        .field("keywords", keywords, MediaType.TEXT_PLAIN_TYPE)
-                        .field("author", author, MediaType.TEXT_PLAIN_TYPE)
-                        .field("uploader", uploader, MediaType.TEXT_PLAIN_TYPE)
-                        .field("capture", captureDate, MediaType.TEXT_PLAIN_TYPE)
-                        .field("filename", fileName, MediaType.TEXT_PLAIN_TYPE)
-                        .bodyPart(filePart);
-
-                final WebTarget target = client.target("http://localhost:8080/RESTService/resources/api/upload");
-                final Response resp = target.request().post(Entity.entity(multipart, multipart.getMediaType()));
-                int result = resp.getStatus();
-
-                formDataMultiPart.close();
-                multipart.close();*/
-            if (uploaded) {
-                response.sendRedirect("imageRegister.jsp?success=1");
-            }
-            else {
-                response.sendRedirect("Error?code=21");
-            }
                 
+                if (uploaded) {
+                    response.sendRedirect("imageRegister.jsp?success=1");
+                }
+                else {
+                    response.sendRedirect("Error?code=21");
+                }
             }  
             else {
                 response.sendRedirect("Error?code=27");
