@@ -80,9 +80,9 @@ public class JavaEE8Resource {
     * @param description 
     * @param keywords      
     * @param author 
-    * @param creator 
+    * @param uploader 
     * @param capt_date     
-     * @param filename     
+    * @param filename     
     * @param fileInputStream     
     * @param fileMetaData     
     * @return 
@@ -95,12 +95,12 @@ public class JavaEE8Resource {
             @FormDataParam("description") String description, 
             @FormDataParam("keywords") String keywords, 
             @FormDataParam("author") String author, 
-            @FormDataParam("creator") String creator, 
+            @FormDataParam("uploader") String uploader, 
             @FormDataParam("capture") String capt_date,
             @FormDataParam("filename") String filename,
             @FormDataParam("file") InputStream fileInputStream,
             @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception{
-        Image im = new Image(title, description, keywords, author, creator, 
+        Image im = new Image(title, description, keywords, author, uploader, 
             capt_date, "", filename);
         
         boolean registered = iS.imageRegister(im);
@@ -110,13 +110,14 @@ public class JavaEE8Resource {
                 .build();
         }
         else{
-            String path = "target/practica2-1.0-SNAPSHOT";
+            /*String path = "target/practica2-1.0-SNAPSHOT";
             String relativePath = "src" + File.separator + "main" + File.separator
                 + "webapp" + File.separator + "images" + File.separator + filename;
             String uploadedFileLocation = path + relativePath;
-            
+            */
+            String uploadedFileLocation = "/home/alumne/images/down/" + filename;
             try {
-                OutputStream out = new FileOutputStream(new File(uploadedFileLocation));
+                OutputStream out;
                 int read = 0;
                 byte[] bytes = new byte[1024];
 
@@ -130,7 +131,7 @@ public class JavaEE8Resource {
               e.printStackTrace();
             }
             return Response
-                     .ok("ok", MediaType.APPLICATION_JSON)
+                     .ok(200, MediaType.APPLICATION_JSON)
                      .build(); 
         }
     }

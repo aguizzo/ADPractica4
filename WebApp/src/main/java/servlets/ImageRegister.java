@@ -54,10 +54,10 @@ public class ImageRegister extends HttpServlet {
             
             if (contentType.equals("image/jpeg")) { 
                 String fileName = part.getSubmittedFileName();
-                final Part fileP = request.getPart("file"); 
+                 
                 final Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
 
-                StreamDataBodyPart filePart = new StreamDataBodyPart("file", fileP.getInputStream());
+                StreamDataBodyPart filePart = new StreamDataBodyPart("file", part.getInputStream());
                 FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
                 final FormDataMultiPart multipart = (FormDataMultiPart) formDataMultiPart
                         .field("title", title, MediaType.TEXT_PLAIN_TYPE)
@@ -69,10 +69,10 @@ public class ImageRegister extends HttpServlet {
                         .field("filename", fileName, MediaType.TEXT_PLAIN_TYPE)
                         .bodyPart(filePart);
 
-                final WebTarget target = client.target("localhost:8080/RESTService/resources/api/register");
+                final WebTarget target = client.target("http://localhost:8080/RESTService/resources/api/register");
                 final Response resp = target.request().post(Entity.entity(multipart, multipart.getMediaType()));
 
-                int result = Integer.parseInt(resp.readEntity(String.class));
+                //int result = Integer.parseInt(resp.readEntity(String.class));
 
                 formDataMultiPart.close();
                 multipart.close();
