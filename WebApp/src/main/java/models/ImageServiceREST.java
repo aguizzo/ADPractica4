@@ -14,7 +14,6 @@ import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.stream.Collectors;
 import javax.servlet.http.Part;
 import javax.ws.rs.client.Client;
@@ -23,7 +22,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -52,7 +50,7 @@ public class ImageServiceREST implements ImageService {
             String data = "id=" + Integer.toString(id)
                     + "&creator=" + uploader;
             int status = sendForm(data);
-            return !(status == 409 || status == 403 || status == -1);
+            return !(status == 409 || status == 403 || status == -1 || status == 500);
         }
         catch (Exception e) {
             System.err.println(e.getMessage());
@@ -118,7 +116,7 @@ public class ImageServiceREST implements ImageService {
                     + "&capt_date=" + image.getCaptureDate()
                     + "&fileName=" + image.getFileName();
             int status = sendForm(data);
-            return !(status == 409 || status == -1);
+            return !(status == 409 || status == -1 || status == 500);
         }
         catch (Exception e) {
             System.err.println(e.getMessage());
@@ -142,7 +140,7 @@ public class ImageServiceREST implements ImageService {
                     + "&creator=" + image.getUploader()
                     + "&capt_date=" + image.getCaptureDate();
             int status = sendForm(data);
-            return !(status == 409 || status == 403 || status == -1);
+            return !(status == 409 || status == 403 || status == -1 || status == 500);
         }
         catch (Exception e) {
             System.err.println(e.getMessage());

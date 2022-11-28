@@ -36,7 +36,7 @@ public class UserServiceREST implements UserService {
                     + "&password=" + password;
 
             int status = sendForm(data);
-            if (status == 404 || status == -1){
+            if (status == 404 || status == -1 || status == 500) {
                 return null;
             }
             else {
@@ -68,7 +68,7 @@ public class UserServiceREST implements UserService {
                     + "&password=" + password;
 
             int status = sendForm(data);
-            return !(status == 409 || status == -1);
+            return !(status == 409 || status == -1 || status == 500);
         }
         catch (Exception e) {
             System.err.println(e.getMessage());

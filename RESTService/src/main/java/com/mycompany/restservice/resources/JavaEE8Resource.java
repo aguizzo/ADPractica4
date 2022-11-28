@@ -64,19 +64,26 @@ public class JavaEE8Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response Login(@FormParam("username") String username,
         @FormParam("password") String password) 
-        throws Exception{
-        User user = uS.userLogin(username, password);
-        if (user != null) {
-            final String json = gson.toJson(user);
+        throws Exception {
+            try {
+            User user = uS.userLogin(username, password);
+            if (user != null) {
+                final String json = gson.toJson(user);
+                return Response
+                    .ok(json, MediaType.APPLICATION_JSON)
+                    .build();
+            }
+            else {
+                return Response
+                    .status(Response.Status.NOT_FOUND)
+                    .build();
+            }
+        } 
+        catch (Exception e) {
             return Response
-                .ok(json, MediaType.APPLICATION_JSON)
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
                 .build();
         }
-        else {
-            return Response
-                .status(Response.Status.NOT_FOUND)
-                .build();
-        }       
     }
     
         /**
@@ -101,20 +108,28 @@ public class JavaEE8Resource {
         @FormParam("author") String author,
         @FormParam("creator") String creator,
         @FormParam("capt_date") String capt_date, 
-        @FormParam("fileName") String fileName) throws Exception{
-        Image im = new Image(title, description, keywords, author, creator, 
-            capt_date, "", fileName);
-        boolean registered = iS.imageRegister(im);
-        if (registered) {
+        @FormParam("fileName") String fileName) 
+            throws Exception {
+        try {
+            Image im = new Image(title, description, keywords, author, creator, 
+                capt_date, "", fileName);
+            boolean registered = iS.imageRegister(im);
+            if (registered) {
+                return Response
+                    .ok("ok", MediaType.APPLICATION_JSON)
+                    .build();
+            }
+            else {
+                return Response
+                    .status(Response.Status.CONFLICT)
+                    .build();
+            }
+        }
+        catch (Exception e) {
             return Response
-                .ok("ok", MediaType.APPLICATION_JSON)
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
                 .build();
         }
-        else {
-            return Response
-                .status(Response.Status.CONFLICT)
-                .build();
-        }   
     }
     
     /** 
@@ -202,28 +217,36 @@ public class JavaEE8Resource {
         @FormParam("keywords") String keywords,
         @FormParam("author") String author,
         @FormParam("creator") String creator,
-        @FormParam("capt_date") String capt_date) throws Exception {
-        Image im = new Image(title, description, keywords, author, creator, 
-            capt_date, "", "");
-        int ID = Integer.valueOf(id);
-        im.setId(ID);
-        boolean isOwner = iS.checkOwnership(ID, creator);
-        if (isOwner) {
-            boolean modified = iS.modifyImage(im);
-            if (modified) {
-                return Response
-                    .ok("ok", MediaType.APPLICATION_JSON)
-                    .build();
+        @FormParam("capt_date") String capt_date)
+            throws Exception {
+        try {
+            Image im = new Image(title, description, keywords, author, creator, 
+                capt_date, "", "");
+            int ID = Integer.valueOf(id);
+            im.setId(ID);
+            boolean isOwner = iS.checkOwnership(ID, creator);
+            if (isOwner) {
+                boolean modified = iS.modifyImage(im);
+                if (modified) {
+                    return Response
+                        .ok("ok", MediaType.APPLICATION_JSON)
+                        .build();
+                }
+                else {
+                    return Response
+                        .status(Response.Status.CONFLICT)
+                        .build();
+                }
             }
             else {
                 return Response
-                    .status(Response.Status.CONFLICT)
+                    .status(Response.Status.FORBIDDEN)
                     .build();
             }
         }
-        else {
+        catch (Exception e) {
             return Response
-                .status(Response.Status.FORBIDDEN)
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
                 .build();
         }
     }
@@ -242,26 +265,33 @@ public class JavaEE8Resource {
     public Response deleteImage (@FormParam("id") String id,
         @FormParam("creator") String creator)
         throws Exception {
-        int ID = Integer.valueOf(id);
-        boolean isOwner = iS.checkOwnership(ID, creator);
-        if (isOwner) {
-            boolean deleted = iS.deleteImage(ID);
-            if (deleted) {
-                return Response
-                    .ok("ok", MediaType.APPLICATION_JSON)
-                    .build();
+        try {
+            int ID = Integer.valueOf(id);
+            boolean isOwner = iS.checkOwnership(ID, creator);
+            if (isOwner) {
+                boolean deleted = iS.deleteImage(ID);
+                if (deleted) {
+                    return Response
+                        .ok("ok", MediaType.APPLICATION_JSON)
+                        .build();
+                }
+                else {
+                    return Response
+                        .status(Response.Status.CONFLICT)
+                        .build();
+                }
             }
             else {
                 return Response
-                    .status(Response.Status.CONFLICT)
+                    .status(Response.Status.FORBIDDEN)
                     .build();
             }
         }
-        else {
+        catch (Exception e) {
             return Response
-                .status(Response.Status.FORBIDDEN)
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
                 .build();
-        }     
+        }
     }
     
     /**
@@ -274,11 +304,18 @@ public class JavaEE8Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response listImages ()
         throws Exception {
-        List<Image> list = iS.getImageList();
-        final String json = gson.toJson(list);
-        return Response
-            .ok(json, MediaType.APPLICATION_JSON)
-            .build();  
+        try {
+            List<Image> list = iS.getImageList();
+            final String json = gson.toJson(list);
+            return Response
+                .ok(json, MediaType.APPLICATION_JSON)
+                .build();
+        }
+        catch (Exception e) {
+            return Response
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .build();
+        }
     }
     
     /**
@@ -327,18 +364,25 @@ public class JavaEE8Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchByID (@PathParam("id") int id)
             throws Exception {
-        Image image = iS.getImage(id);
-        if (image != null) {
-            final String json = gson.toJson(image);
+        try {
+            Image image = iS.getImage(id);
+            if (image != null) {
+                final String json = gson.toJson(image);
+                return Response
+                    .ok(json, MediaType.APPLICATION_JSON)
+                    .build();
+            }
+            else {
+                return Response
+                    .status(Response.Status.NOT_FOUND)
+                    .build();
+            }
+        }
+        catch (Exception e) {
             return Response
-                .ok(json, MediaType.APPLICATION_JSON)
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
                 .build();
         }
-        else {
-            return Response
-                .status(Response.Status.NOT_FOUND)
-                .build();
-        }    
     }
 
     /**
@@ -352,11 +396,18 @@ public class JavaEE8Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchByTitle (@PathParam("title") String title)
         throws Exception {
-        List<Image> list = iS.searchByTitle(title);
-        final String json = gson.toJson(list);
-        return Response
-            .ok(json, MediaType.APPLICATION_JSON)
-            .build(); 
+        try {
+            List<Image> list = iS.searchByTitle(title);
+            final String json = gson.toJson(list);
+            return Response
+                .ok(json, MediaType.APPLICATION_JSON)
+                .build();
+        }
+        catch (Exception e) {
+            return Response
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .build();
+        }
     }
 
     /**
@@ -371,11 +422,18 @@ public class JavaEE8Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchByStorageDate (@PathParam("date") String date)
         throws Exception {
-        List<Image> list = iS.searchByStorageDate(date);
-        final String json = gson.toJson(list);
-        return Response
-            .ok(json, MediaType.APPLICATION_JSON)
-            .build();
+        try {
+            List<Image> list = iS.searchByStorageDate(date);
+            final String json = gson.toJson(list);
+            return Response
+                .ok(json, MediaType.APPLICATION_JSON)
+                .build();
+        }
+        catch (Exception e) {
+            return Response
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .build();
+        }
     }
 
     /**
@@ -389,11 +447,18 @@ public class JavaEE8Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchByAuthor (@PathParam("author") String author)
         throws Exception {
-        List<Image> list = iS.searchByAuthor(author);
-        final String json = gson.toJson(list);
-        return Response
-            .ok(json, MediaType.APPLICATION_JSON)
-            .build();
+        try {
+            List<Image> list = iS.searchByAuthor(author);
+            final String json = gson.toJson(list);
+            return Response
+                .ok(json, MediaType.APPLICATION_JSON)
+                .build();
+        }
+        catch (Exception e) {
+            return Response
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .build();
+        }
     }
 
     /**
@@ -407,11 +472,18 @@ public class JavaEE8Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchByKeywords (@PathParam("keywords") String keywords)
         throws Exception {
+        try {
         List<Image> list = iS.searchByKeywords(keywords);
         final String json = gson.toJson(list);
         return Response
             .ok(json, MediaType.APPLICATION_JSON)
-            .build();         
+            .build();     
+        }
+        catch (Exception e) {
+            return Response
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .build();
+        }
     }
 
     /*
@@ -432,17 +504,24 @@ public class JavaEE8Resource {
     public Response registerUser(@FormParam("username") String username,
         @FormParam("password") String password) 
         throws Exception{
-        boolean registered = uS.userRegister(username, password);
-        if (registered) {
+        try {
+            boolean registered = uS.userRegister(username, password);
+            if (registered) {
+                return Response
+                    .ok("ok", MediaType.APPLICATION_JSON)
+                    .build();
+            }
+            else {
+                return Response
+                    .status(Response.Status.CONFLICT)
+                    .build();
+            } 
+        }
+        catch (Exception e) {
             return Response
-                .ok("ok", MediaType.APPLICATION_JSON)
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
                 .build();
         }
-        else {
-            return Response
-                .status(Response.Status.CONFLICT)
-                .build();
-        }       
     }
     
     /**
@@ -462,11 +541,18 @@ public class JavaEE8Resource {
         @QueryParam("author") String author,
         @QueryParam("capt_date") String capt_date)
         throws Exception{
+        try {
         List<Image> list = iS.
                 searchImages(title, keywords, author, capt_date);
         final String json = gson.toJson(list);
         return Response
             .ok(json, MediaType.APPLICATION_JSON)
-            .build();        
+            .build(); 
+        }
+        catch (Exception e) {
+            return Response
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .build();
+        }
     }
 }
