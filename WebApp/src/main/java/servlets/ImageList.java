@@ -33,17 +33,6 @@ public class ImageList extends HttpServlet {
         try {
             RequestDispatcher dispatcher = null;
             List<Image> list = iS.getImageList();
-            
-            for (Image im : list) {
-                int id = im.getId();
-                String filename = im.getFileName();
-                File f = iS.downloadImage(id, filename);
-                boolean saved = saveFile(f, filename);
-                if (!saved) {
-                   response.sendRedirect("Error?code=22");
-                }
-            }
-            
             request.setAttribute("imageList", list);   
             dispatcher = request.
                 getRequestDispatcher("imageList.jsp");           
@@ -62,42 +51,5 @@ public class ImageList extends HttpServlet {
             + "webapp" + File.separator + "images" + File.separator + fileName;
         return path + relativePath;
     }
-    
-     private boolean saveFile(File part, String fileName)
-        throws IOException {
-        boolean saved = false;
-        String path = getPath(fileName);
-        /*File file = new File(path);
-            if (file.exists()) {
-                return true;
-        }*/
-        FileOutputStream fops = null;
-        FileInputStream is = null;
-        try {
-            int read;
-            is = new FileInputStream(part);
-            
-            fops = new FileOutputStream(new File(path));
-            final byte[] bytes = new byte[1024];
-            
-            while((read = is.read(bytes)) != -1) {
-                fops.write(bytes, 0, read);
-            }
-            saved = true;
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        finally {
-            if (fops != null) {
-                fops.close();
-            }
-            if (is != null) {
-                is.close();
-            }
-        }
-        return saved;
-    }
-     
       
 }

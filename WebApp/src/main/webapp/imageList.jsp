@@ -70,7 +70,7 @@
                 <h3>${im.title}</h3>
                 <div class="d-flex p-3">
                     <a href="${imshow}">
-                        <img src="./images/${im.fileName}" alt="error"
+                        <img src="http://192.168.122.238:8080/RESTService/resources/api/getImage/${im.id}" alt="error"
                             class="flex-shrink-0 me-3 border rounded-circle Imlist"
                         >
                     </a>    
