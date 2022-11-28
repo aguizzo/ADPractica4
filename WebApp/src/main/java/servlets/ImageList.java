@@ -34,7 +34,7 @@ public class ImageList extends HttpServlet {
             RequestDispatcher dispatcher = null;
             List<Image> list = iS.getImageList();
             
-            /*for (Image im : list) {
+            for (Image im : list) {
                 int id = im.getId();
                 String filename = im.getFileName();
                 File f = iS.downloadImage(id, filename);
@@ -42,7 +42,7 @@ public class ImageList extends HttpServlet {
                 if (!saved) {
                    response.sendRedirect("Error?code=22");
                 }
-            }*/
+            }
             
             request.setAttribute("imageList", list);   
             dispatcher = request.
@@ -67,17 +67,17 @@ public class ImageList extends HttpServlet {
         throws IOException {
         boolean saved = false;
         String path = getPath(fileName);
-        File file = new File(path);
+        /*File file = new File(path);
             if (file.exists()) {
                 return true;
-        }
+        }*/
         FileOutputStream fops = null;
         FileInputStream is = null;
         try {
             int read;
             is = new FileInputStream(part);
             
-            fops = new FileOutputStream(file);
+            fops = new FileOutputStream(new File(path));
             final byte[] bytes = new byte[1024];
             
             while((read = is.read(bytes)) != -1) {

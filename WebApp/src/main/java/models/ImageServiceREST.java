@@ -134,7 +134,7 @@ public class ImageServiceREST implements ImageService {
             initPOSTConection("modify");
             String data = "id=" + Integer.toString(image.getId())
                     + "&title=" + image.getTitle()
-                    + "&description=" + image.getTitle()
+                    + "&description=" + image.getDescription()
                     + "&keywords=" + image.getKeywords()
                     + "&author=" + image.getAuthor()
                     + "&creator=" + image.getUploader()
