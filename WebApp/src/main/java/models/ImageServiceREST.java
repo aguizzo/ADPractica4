@@ -14,10 +14,18 @@ import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.stream.Collectors;
-import org.apache.commons.io.FileUtils;
+import javax.servlet.http.Part;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.apache.commons.io.IOUtils;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 
 public class ImageServiceREST implements ImageService {
     
@@ -42,7 +50,7 @@ public class ImageServiceREST implements ImageService {
             String data = "id=" + Integer.toString(id)
                     + "&creator=" + uploader;
             int status = sendForm(data);
-            return !(status == 409 || status == 403 || status == -1);
+            return !(status == 409 || status == 403 || status == -1 || status == 500);
         }
         catch (Exception e) {
             System.err.println(e.getMessage());
@@ -108,7 +116,7 @@ public class ImageServiceREST implements ImageService {
                     + "&capt_date=" + image.getCaptureDate()
                     + "&fileName=" + image.getFileName();
             int status = sendForm(data);
-            return !(status == 409 || status == -1);
+            return !(status == 409 || status == -1 || status == 500);
         }
         catch (Exception e) {
             System.err.println(e.getMessage());
@@ -126,13 +134,13 @@ public class ImageServiceREST implements ImageService {
             initPOSTConection("modify");
             String data = "id=" + Integer.toString(image.getId())
                     + "&title=" + image.getTitle()
-                    + "&description=" + image.getTitle()
+                    + "&description=" + image.getDescription()
                     + "&keywords=" + image.getKeywords()
                     + "&author=" + image.getAuthor()
                     + "&creator=" + image.getUploader()
                     + "&capt_date=" + image.getCaptureDate();
             int status = sendForm(data);
-            return !(status == 409 || status == 403 || status == -1);
+            return !(status == 409 || status == 403 || status == -1 || status == 500);
         }
         catch (Exception e) {
             System.err.println(e.getMessage());
@@ -249,17 +257,57 @@ public class ImageServiceREST implements ImageService {
         }    
     }
     
-    public File downloadImage(int id, String filename) {
+    @Override
+    public boolean imageUpload(Image image, Part part) throws Exception {
+        try {
+            final Client client = ClientBuilder.newBuilder()
+                .register(MultiPartFeature.class).build();
+            StreamDataBodyPart filePart = 
+                new StreamDataBodyPart("file", part.getInputStream());
+            FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
+        
+            final FormDataMultiPart multipart = 
+                (FormDataMultiPart) formDataMultiPart
+                .field("title", image.getTitle(), MediaType.TEXT_PLAIN_TYPE)
+                .field("description", image.getDescription(), MediaType.TEXT_PLAIN_TYPE)
+                .field("keywords", image.getKeywords(), MediaType.TEXT_PLAIN_TYPE)
+                .field("author", image.getAuthor(), MediaType.TEXT_PLAIN_TYPE)
+                .field("uploader", image.getUploader(), MediaType.TEXT_PLAIN_TYPE)
+                .field("capture", image.getCaptureDate(), MediaType.TEXT_PLAIN_TYPE)
+                .field("filename", image.getFileName(), MediaType.TEXT_PLAIN_TYPE)
+                .bodyPart(filePart);
+            final WebTarget target = client.target(APIURL + "upload");
+            final Response resp = target.request()
+                .post(Entity.entity(multipart, multipart.getMediaType()));
+            int status = resp.getStatus();
+            formDataMultiPart.close();
+            multipart.close();
+            
+            return !(status == 409 || status == 500);
+        }
+        catch (Exception e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+    }
+
+    
+    @Override
+    public File downloadImage(int id, String filename) 
+        throws Exception{
         try {
             String ID = Integer.toString(id);
             int status = initGETConection("getImage/" + ID);
             String path = getPath(filename);
             InputStream is = connection.getInputStream();
-   
-            File tempFile = File.createTempFile(filename, null);
-            tempFile.deleteOnExit();
-            FileOutputStream out = new FileOutputStream(tempFile);
-            IOUtils.copy(is, out);
+            
+            File tempFile = null;
+            if (status == 200) {
+                tempFile = File.createTempFile(filename, null);
+                tempFile.deleteOnExit();
+                FileOutputStream out = new FileOutputStream(tempFile);
+                IOUtils.copy(is, out);
+            }
             return tempFile;
         }
         catch (Exception e) {
@@ -362,5 +410,4 @@ public class ImageServiceREST implements ImageService {
         throw new UnsupportedOperationException("Not supported."); 
         //To change body of generated methods, choose Tools | Templates.
     }
-
 }

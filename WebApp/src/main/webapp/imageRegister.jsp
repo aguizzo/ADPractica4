@@ -53,7 +53,7 @@
                 <p class="success">¡Imagen registrada con éxito!</p>
             </c:if>
             <form 
-                action="ImageRegister" 
+                action="ImageUpload" 
                 method="POST"
                 enctype="multipart/form-data"
             >

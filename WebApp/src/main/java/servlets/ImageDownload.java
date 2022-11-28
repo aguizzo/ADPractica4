@@ -12,12 +12,14 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import models.ImageService;
 import models.ImageServiceREST;
 
 @WebServlet(name = "ImageDownload", urlPatterns = {"/ImageDownload"})
 public class ImageDownload extends HttpServlet {
     
-    private final ImageServiceREST iS = ImageServiceREST.getInstance();
+    private final ImageService iS = ImageServiceREST.getInstance();
 
     void processDownloadRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
