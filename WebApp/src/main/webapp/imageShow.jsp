@@ -61,7 +61,7 @@
             <h1 class="display-6">${image.title}</h1>
             <p>Subida por <b>${image.uploader}</b> en ${image.storageDate}</p>
         
-            <img src="./images/${image.fileName}" alt="error">
+            <img src="http://192.168.122.238:8080/RESTService/resources/api/getImage/${image.id}" alt="error">
             <form
                class="Imdesc"
                action="ImageDownload" 

@@ -320,7 +320,7 @@ public class ImageServiceREST implements ImageService {
     }
     
     private String getPath(String fileName) {
-        String path = "/home/alumne/images/" + fileName;
+        String path = "/home/alumne/" + fileName;
         return path;
     }
     
