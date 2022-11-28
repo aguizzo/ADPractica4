@@ -15,7 +15,7 @@ public class UserServiceREST implements UserService {
 
     private static final UserServiceREST instance = new UserServiceREST();
     private static HttpURLConnection connection;
-    private static final String APIURL = "http://localhost:8080/RESTService/"
+    private static final String APIURL = "http://192.168.122.238:8080/RESTService/"
         + "resources/api/";
     private final Gson gson = new Gson();
     public UserServiceREST() {

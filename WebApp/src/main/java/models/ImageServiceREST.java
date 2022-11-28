@@ -31,7 +31,7 @@ public class ImageServiceREST implements ImageService {
     
     private static final ImageServiceREST instance = new ImageServiceREST();
     private static HttpURLConnection connection;
-    private static final String APIURL = "http://localhost:8080/RESTService/"
+    private static final String APIURL = "http://192.168.122.238:8080/RESTService/"
         + "resources/api/";    
     private final Gson gson = new Gson();
     
@@ -320,7 +320,7 @@ public class ImageServiceREST implements ImageService {
     }
     
     private String getPath(String fileName) {
-        String path = "/home/alumne/images/down/" + fileName;
+        String path = "/home/alumne/images/" + fileName;
         return path;
     }
     
