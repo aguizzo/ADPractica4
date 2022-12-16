@@ -25,7 +25,6 @@ public class JAXRSConfiguration extends Application {
         resources.
             add(com.mycompany.restservice.CORSPolicy.class);
         resources.add(com.mycompany.restservice.resources.ImageResource.class);
-        resources.add(com.mycompany.restservice.resources.JavaEE8Resource.class);
         resources.add(com.mycompany.restservice.resources.UserResource.class);
     }   
 }

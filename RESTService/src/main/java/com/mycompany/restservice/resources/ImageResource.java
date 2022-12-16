@@ -17,6 +17,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -26,6 +27,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import models.Image;
+import models.ImageDTO;
 import models.ImageService;
 import models.ImageServiceDB;
 
@@ -37,7 +39,7 @@ import models.ImageServiceDB;
 @Path("image")
 public class ImageResource {
     
-    private final ImageService iS = ImageServiceDB.getInstance();
+    private final ImageServiceDB iS = ImageServiceDB.getInstance();
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final String path = "/home/alumne/images/";
     
@@ -54,8 +56,8 @@ public class ImageResource {
      * @param description
      * @param keywords
      * @param author
-     * @param creator
-     * @param capt_date
+     * @param uploader
+     * @param captureDate
      * @param fileName
      * @return
      * @throws java.lang.Exception
@@ -68,13 +70,13 @@ public class ImageResource {
         @FormParam("description") String description,
         @FormParam("keywords") String keywords,
         @FormParam("author") String author,
-        @FormParam("creator") String creator,
-        @FormParam("capt_date") String capt_date, 
+        @FormParam("uploader") String uploader,
+        @FormParam("captureDate") String captureDate, 
         @FormParam("fileName") String fileName) 
             throws Exception {
         try {
-            Image im = new Image(title, description, keywords, author, creator, 
-                capt_date, "", fileName);
+            Image im = new Image(title, description, keywords, author, uploader, 
+                captureDate, "", fileName);
             boolean registered = iS.imageRegister(im);
             if (registered) {
                 return Response
@@ -101,7 +103,7 @@ public class ImageResource {
     * @param keywords      
     * @param author 
     * @param uploader 
-    * @param capt_date     
+    * @param captureDate     
     * @param filename     
     * @param fileInputStream     
     * @param fileMetaData     
@@ -117,13 +119,13 @@ public class ImageResource {
         @FormDataParam("keywords") String keywords, 
         @FormDataParam("author") String author, 
         @FormDataParam("uploader") String uploader, 
-        @FormDataParam("capture") String capt_date,
+        @FormDataParam("capture") String captureDate,
         @FormDataParam("filename") String filename,
         @FormDataParam("file") InputStream fileInputStream,
         @FormDataParam("file") FormDataContentDisposition fileMetaData)
         throws Exception {
         Image im = new Image(title, description, keywords, author, uploader, 
-            capt_date, "", filename);
+            captureDate, "", filename);
         
         boolean registered = iS.imageRegister(im);
         if (!registered) {
@@ -158,45 +160,92 @@ public class ImageResource {
     }
     
     /**
-     * POST method to modify an existing image
+     * PUT method to modify an existing image
      * @param id
      * @param title
      * @param description
      * @param keywords
      * @param author
-     * @param creator, used for checking image ownership
-     * @param capt_date
+     * @param uploader, used for checking image ownership
+     * @param captureDate
      * @return
      * @throws java.lang.Exception
     */
-    @Path("modify")
-    @POST
+    @Path("{id}")
+    @PUT
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response modifyImage (@FormParam("id") String id,
+    public Response modifyImage (@PathParam("id") int id,
         @FormParam("title") String title,
         @FormParam("description") String description,
         @FormParam("keywords") String keywords,
         @FormParam("author") String author,
-        @FormParam("creator") String creator,
-        @FormParam("capt_date") String capt_date)
+        @FormParam("uploader") String uploader,
+        @FormParam("captureDate") String captureDate)
             throws Exception {
         try {
-            Image im = new Image(title, description, keywords, author, creator, 
-                capt_date, "", "");
-            int ID = Integer.valueOf(id);
-            im.setId(ID);
-            boolean isOwner = iS.checkOwnership(ID, creator);
+            Image im = new Image(title, description, keywords, author, uploader, 
+                captureDate, "", "");
+            im.setId(id);
+            boolean isOwner = iS.checkOwnership(id, uploader);
             if (isOwner) {
-                boolean modified = iS.modifyImage(im);
+                ImageDTO dto = iS.modifyImage2(im);
+                boolean modified = dto.isOperationSucess();
                 if (modified) {
+                    im = dto.getImage();
+                    final String json = gson.toJson(im);
+                    return Response
+                        .ok(json, MediaType.APPLICATION_JSON)
+                        .build();
+                }
+                else {
+                    return Response
+                        .status(Response.Status.NOT_FOUND)
+                        .entity("La imagen no existe")
+                        .build();
+                }
+            }
+            else {
+                return Response
+                    .status(Response.Status.FORBIDDEN)
+                    .entity("No eres el propietario de la imagen")
+                    .build();
+            }
+        }
+        catch (Exception e) {
+            return Response
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .build();
+        }
+    }
+    
+    /**
+     * POST method to delete an existing image
+     * @param id
+     * @param uploader, used for checking image ownership
+     * @return
+     * @throws java.lang.Exception
+     */
+    @Path("delete")
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteImage (@FormParam("id") String id,
+        @FormParam("uploader") String uploader)
+        throws Exception {
+        try {
+            int ID = Integer.valueOf(id);
+            boolean isOwner = iS.checkOwnership(ID, uploader);
+            if (isOwner) {
+                boolean deleted = iS.deleteImage(ID);
+                if (deleted) {
                     return Response
                         .ok("ok", MediaType.APPLICATION_JSON)
                         .build();
                 }
                 else {
                     return Response
-                        .status(Response.Status.CONFLICT)
+                        .status(Response.Status.NOT_FOUND)
                         .build();
                 }
             }
@@ -211,41 +260,30 @@ public class ImageResource {
                 .status(Response.Status.INTERNAL_SERVER_ERROR)
                 .build();
         }
-    }
-    
+    }    
+
     /**
-     * POST method to delete an existing image
+     * GET method to search images by id
      * @param id
-     * @param creator, used for checking image ownership
      * @return
      * @throws java.lang.Exception
-     */
-    @Path("delete")
-    @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    */
+    @Path("{id}")
+    @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteImage (@FormParam("id") String id,
-        @FormParam("creator") String creator)
-        throws Exception {
+    public Response searchByID (@PathParam("id") int id)
+            throws Exception {
         try {
-            int ID = Integer.valueOf(id);
-            boolean isOwner = iS.checkOwnership(ID, creator);
-            if (isOwner) {
-                boolean deleted = iS.deleteImage(ID);
-                if (deleted) {
-                    return Response
-                        .ok("ok", MediaType.APPLICATION_JSON)
-                        .build();
-                }
-                else {
-                    return Response
-                        .status(Response.Status.CONFLICT)
-                        .build();
-                }
+            Image image = iS.getImage(id);
+            if (image != null) {
+                final String json = gson.toJson(image);
+                return Response
+                    .ok(json, MediaType.APPLICATION_JSON)
+                    .build();
             }
             else {
                 return Response
-                    .status(Response.Status.FORBIDDEN)
+                    .status(Response.Status.NOT_FOUND)
                     .build();
             }
         }
@@ -306,39 +344,6 @@ public class ImageResource {
                     ok(f, mt).header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=" + filename)
                     .build();
-        }
-        catch (Exception e) {
-            return Response
-                .status(Response.Status.INTERNAL_SERVER_ERROR)
-                .build();
-        }
-    }
-    
-
-    /**
-     * GET method to search images by id
-     * @param id
-     * @return
-     * @throws java.lang.Exception
-    */
-    @Path("{id}")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response searchByID (@PathParam("id") int id)
-            throws Exception {
-        try {
-            Image image = iS.getImage(id);
-            if (image != null) {
-                final String json = gson.toJson(image);
-                return Response
-                    .ok(json, MediaType.APPLICATION_JSON)
-                    .build();
-            }
-            else {
-                return Response
-                    .status(Response.Status.NOT_FOUND)
-                    .build();
-            }
         }
         catch (Exception e) {
             return Response
@@ -453,7 +458,7 @@ public class ImageResource {
      * @param title
      * @param keywords
      * @param author
-     * @param capt_date
+     * @param captureDate
      * @return
      * @throws java.lang.Exception
     */
@@ -463,11 +468,11 @@ public class ImageResource {
     public Response combinedSearch (@QueryParam("title") String title,
         @QueryParam("keywords") String keywords,
         @QueryParam("author") String author,
-        @QueryParam("capt_date") String capt_date)
+        @QueryParam("captureDate") String captureDate)
         throws Exception{
         try {
         List<Image> list = iS.
-                searchImages(title, keywords, author, capt_date);
+                searchImages(title, keywords, author, captureDate);
         final String json = gson.toJson(list);
         return Response
             .ok(json, MediaType.APPLICATION_JSON)

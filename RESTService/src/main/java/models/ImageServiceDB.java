@@ -111,6 +111,25 @@ public class ImageServiceDB implements ImageService {
         }
     }
     
+    public ImageDTO modifyImage2(Image image)
+            throws  IOException, SQLException {
+        try {
+            boolean modified = modifyImage(image);
+            Image im = null;
+            if(modified) {
+                im = getImage(image.getId());
+            }
+            ImageDTO dto = new ImageDTO(modified, im);
+            return dto;
+        }
+        catch(SQLException e) {
+            return new ImageDTO();
+        }
+        finally {
+            closeConnection();
+        }
+    }
+    
     @Override
     public Image getImage(int id)
         throws  IOException, SQLException{
