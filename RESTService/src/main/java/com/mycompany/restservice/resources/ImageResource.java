@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.util.List;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -49,53 +50,7 @@ public class ImageResource {
             .ok("ping")
             .build();
     }
-    
-    /**
-     * POST method to register the metada of a image
-     * @param title
-     * @param description
-     * @param keywords
-     * @param author
-     * @param uploader
-     * @param captureDate
-     * @param fileName
-     * @return
-     * @throws java.lang.Exception
-    */
-    @Path("register")
-    @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response registerImage (@FormParam("title") String title,
-        @FormParam("description") String description,
-        @FormParam("keywords") String keywords,
-        @FormParam("author") String author,
-        @FormParam("uploader") String uploader,
-        @FormParam("captureDate") String captureDate, 
-        @FormParam("fileName") String fileName) 
-            throws Exception {
-        try {
-            Image im = new Image(title, description, keywords, author, uploader, 
-                captureDate, "", fileName);
-            boolean registered = iS.imageRegister(im);
-            if (registered) {
-                return Response
-                    .ok("ok", MediaType.APPLICATION_JSON)
-                    .build();
-            }
-            else {
-                return Response
-                    .status(Response.Status.CONFLICT)
-                    .build();
-            }
-        }
-        catch (Exception e) {
-            return Response
-                .status(Response.Status.INTERNAL_SERVER_ERROR)
-                .build();
-        }
-    }
-    
+   
     /** 
     * POST method to register and upload a new image 
     * @param title 
@@ -126,11 +81,12 @@ public class ImageResource {
         throws Exception {
         Image im = new Image(title, description, keywords, author, uploader, 
             captureDate, "", filename);
-        
-        boolean registered = iS.imageRegister(im);
+        ImageDTO dto = iS.imageRegister2(im);
+        boolean registered = dto.isOperationSucess();
         if (!registered) {
             return Response
                 .status(Response.Status.CONFLICT)
+                .entity("No se ha podido registrar la imagen en base de datos")
                 .build();
         }
         else{
@@ -147,15 +103,17 @@ public class ImageResource {
             out.flush();
             out.close();
             } 
-            catch (IOException e) {
+            catch (Exception e) {
               e.printStackTrace();
               return Response
-                .status(Response.Status.CONFLICT)
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
                 .build();
             }
+            final String json = gson.toJson(dto.getImage());
             return Response
-                     .ok(200, MediaType.APPLICATION_JSON)
-                     .build(); 
+                .status(Response.Status.CREATED)
+                .entity(json)
+                .build();
         }
     }
     
@@ -184,6 +142,8 @@ public class ImageResource {
         @FormParam("captureDate") String captureDate)
             throws Exception {
         try {
+            //Image image = iS.getImage(id);
+            
             Image im = new Image(title, description, keywords, author, uploader, 
                 captureDate, "", "");
             im.setId(id);
@@ -192,8 +152,7 @@ public class ImageResource {
                 ImageDTO dto = iS.modifyImage2(im);
                 boolean modified = dto.isOperationSucess();
                 if (modified) {
-                    im = dto.getImage();
-                    final String json = gson.toJson(im);
+                    final String json = gson.toJson(dto.getImage());
                     return Response
                         .ok(json, MediaType.APPLICATION_JSON)
                         .build();
@@ -220,40 +179,42 @@ public class ImageResource {
     }
     
     /**
-     * POST method to delete an existing image
+     * DELETE method to delete an existing image
      * @param id
-     * @param uploader, used for checking image ownership
+     
      * @return
      * @throws java.lang.Exception
      */
-    @Path("delete")
-    @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteImage (@FormParam("id") String id,
-        @FormParam("uploader") String uploader)
+    @Path("{id}")
+    @DELETE
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response deleteImage (@PathParam("id") int id
+        //@FormParam("uploader") String uploader
+    )
+        //* @param uploader, used for checking image ownership
         throws Exception {
         try {
-            int ID = Integer.valueOf(id);
-            boolean isOwner = iS.checkOwnership(ID, uploader);
-            if (isOwner) {
-                boolean deleted = iS.deleteImage(ID);
+            //boolean isOwner = iS.checkOwnership(id, uploader);
+            //if (isOwner) {
+                boolean deleted = iS.deleteImage(id);
                 if (deleted) {
                     return Response
-                        .ok("ok", MediaType.APPLICATION_JSON)
+                        .ok("Imagen eliminada con éxito", MediaType.APPLICATION_JSON)
                         .build();
                 }
                 else {
                     return Response
                         .status(Response.Status.NOT_FOUND)
+                        .entity("La imagen no existe")
                         .build();
                 }
-            }
+            /*}
             else {
                 return Response
                     .status(Response.Status.FORBIDDEN)
+                    .entity("No eres el propietario de la imagen")
                     .build();
-            }
+            }*/
         }
         catch (Exception e) {
             return Response
@@ -284,6 +245,7 @@ public class ImageResource {
             else {
                 return Response
                     .status(Response.Status.NOT_FOUND)
+                    .entity("La imagen no existe")
                     .build();
             }
         }
@@ -323,7 +285,7 @@ public class ImageResource {
      * @param id
      * @return 
     */
-    @Path("getImage/{id}")
+    @Path("downloadImage/{id}")
     @GET
     @Produces("image/*")
     public Response getImage(@PathParam("id") int id) { 
@@ -331,8 +293,9 @@ public class ImageResource {
             Image im = iS.getImage(id);
             if (im == null)
                 return Response
-                    .status(Response.Status.NOT_FOUND)
-                    .build();
+                        .status(Response.Status.NOT_FOUND)
+                        .entity("La imagen no existe")
+                        .build();
             String filename = im.getFileName();
             File f = new File(path + filename);
             if (!f.exists())
@@ -479,6 +442,7 @@ public class ImageResource {
             .build(); 
         }
         catch (Exception e) {
+            e.printStackTrace();
             return Response
                 .status(Response.Status.INTERNAL_SERVER_ERROR)
                 .build();

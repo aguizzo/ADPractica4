@@ -58,6 +58,52 @@ public class ImageServiceDB implements ImageService {
         }
     }
     
+    private Image getLastImage()
+        throws  IOException, SQLException{
+        try {
+            Image im = null;
+            String query;
+            PreparedStatement statement;
+            initConnection();
+
+            query = "select * from images "
+                    + "order by id desc "
+                    + "fetch first 1 rows only";
+            statement = connection.prepareStatement(query);
+            ResultSet rs = statement.executeQuery();
+            
+            if (rs.next()) {
+                im = createImage(rs);
+            }
+            return im;
+        }
+        catch(SQLException e) {
+            return null;
+        }
+        finally {
+            closeConnection();
+        }
+    }
+    
+    public ImageDTO imageRegister2(Image image)
+            throws  IOException, SQLException {
+        try {
+            boolean registered = imageRegister(image);
+            Image im = null;
+            if(registered) {
+                im = getLastImage();
+            }
+            ImageDTO dto = new ImageDTO(registered, im);
+            return dto;
+        }
+        catch(SQLException e) {
+            return new ImageDTO();
+        }
+        finally {
+            closeConnection();
+        }
+    }
+    
     @Override
     public boolean deleteImage(int id)
             throws  IOException, SQLException {
