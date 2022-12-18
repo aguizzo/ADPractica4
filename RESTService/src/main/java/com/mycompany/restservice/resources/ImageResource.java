@@ -23,6 +23,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -62,6 +63,7 @@ public class ImageResource {
     * @param filename     
     * @param fileInputStream     
     * @param fileMetaData     
+     * @param headers     
     * @return 
     * @throws java.lang.Exception 
    */ 
@@ -77,11 +79,13 @@ public class ImageResource {
         @FormDataParam("capture") String captureDate,
         @FormDataParam("filename") String filename,
         @FormDataParam("file") InputStream fileInputStream,
-        @FormDataParam("file") FormDataContentDisposition fileMetaData)
+        @FormDataParam("file") FormDataContentDisposition fileMetaData,
+        @Context HttpHeaders headers)
         throws Exception {
         Image im = new Image(title, description, keywords, author, uploader, 
             captureDate, "", filename);
         ImageDTO dto = iS.imageRegister2(im);
+        String token = headers.getRequestHeader("api_key").get(0);
         boolean registered = dto.isOperationSucess();
         if (!registered) {
             return Response
@@ -126,6 +130,7 @@ public class ImageResource {
      * @param author
      * @param uploader, used for checking image ownership
      * @param captureDate
+     * @param headers
      * @return
      * @throws java.lang.Exception
     */
@@ -139,11 +144,13 @@ public class ImageResource {
         @FormParam("keywords") String keywords,
         @FormParam("author") String author,
         @FormParam("uploader") String uploader,
-        @FormParam("captureDate") String captureDate)
+        @FormParam("captureDate") String captureDate,
+        @Context HttpHeaders headers)
             throws Exception {
         try {
             //Image image = iS.getImage(id);
-            
+            String token = headers.getRequestHeader("api_key").get(0);
+            System.out.println("token: " + token);
             Image im = new Image(title, description, keywords, author, uploader, 
                 captureDate, "", "");
             im.setId(id);
@@ -172,6 +179,7 @@ public class ImageResource {
             }
         }
         catch (Exception e) {
+            e.printStackTrace();
             return Response
                 .status(Response.Status.INTERNAL_SERVER_ERROR)
                 .build();
@@ -181,21 +189,23 @@ public class ImageResource {
     /**
      * DELETE method to delete an existing image
      * @param id
-     
+     * @param headers
      * @return
      * @throws java.lang.Exception
      */
     @Path("{id}")
     @DELETE
     @Produces(MediaType.TEXT_PLAIN)
-    public Response deleteImage (@PathParam("id") int id
+    public Response deleteImage (@PathParam("id") int id,
+        @Context HttpHeaders headers
         //@FormParam("uploader") String uploader
-    )
+    )   
         //* @param uploader, used for checking image ownership
         throws Exception {
         try {
             //boolean isOwner = iS.checkOwnership(id, uploader);
             //if (isOwner) {
+                String token = headers.getRequestHeader("api_key").get(0);
                 boolean deleted = iS.deleteImage(id);
                 if (deleted) {
                     return Response
