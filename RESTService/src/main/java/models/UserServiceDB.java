@@ -43,6 +43,16 @@ public class UserServiceDB implements UserService {
             }
             us = new User(username , password);
             us.setToken();
+            String token = us.getToken();
+            
+            query = "update users " +
+                    "set token=? " +
+                    "where username=?";
+            statement = connection.prepareStatement(query);
+            statement.setString(1, token);
+            statement.setString(2, username);
+            int result = statement.executeUpdate(); 
+            
             us.encryptPassword();
             return us;
         }
