@@ -62,7 +62,7 @@ public class UserResource {
             }
             else {
                 return Response
-                    .status(Response.Status.NOT_FOUND)
+                    .status(Response.Status.BAD_REQUEST)
                     .entity("El usuario no existe")
                     .build();
             }
