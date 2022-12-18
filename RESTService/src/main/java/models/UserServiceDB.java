@@ -42,6 +42,7 @@ public class UserServiceDB implements UserService {
                 return us;
             }
             us = new User(username , password);
+            us.setToken();
             us.encryptPassword();
             return us;
         }

@@ -41,8 +41,8 @@ public class User {
         return token;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setToken() throws NoSuchAlgorithmException {
+        this.token = getMd5(this.username+this.password);
     }
     
     public void encryptPassword() throws NoSuchAlgorithmException {
