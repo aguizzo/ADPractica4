@@ -16,6 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import models.User;
+import models.UserDTO;
 import models.UserService;
 import models.UserServiceDB;
 
@@ -26,7 +27,7 @@ import models.UserServiceDB;
 @Path("user")
 public class UserResource {
     
-    private final UserService uS = UserServiceDB.getInstance();
+    private final UserServiceDB uS = UserServiceDB.getInstance();
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final String path = "/home/alumne/images/";
     
@@ -87,16 +88,19 @@ public class UserResource {
         @FormParam("password") String password) 
         throws Exception{
         try {
-            boolean registered = uS.userRegister(username, password);
+            UserDTO dto = uS.userRegister2(username, password);
+            boolean registered = dto.isOperationSucess();
             if (registered) {
+                final String json = gson.toJson(dto.getUser());
                 return Response
-                    .ok("ok", MediaType.APPLICATION_JSON)
+                    .status(Response.Status.CREATED)
+                    .entity(json)
                     .build();
             }
             else {
                 return Response
                     .status(Response.Status.CONFLICT)
-                    .entity("error")
+                    .entity("Ya existe un usuario con ese nombre")
                     .build();
             } 
         }

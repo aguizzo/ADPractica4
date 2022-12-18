@@ -61,10 +61,11 @@ public class UserServiceDB implements UserService {
             PreparedStatement statement;
             initConnection();
 
-            query = "insert into users values(?,?)";
+            query = "insert into users values(?,?, ?)";
             statement = connection.prepareStatement(query);    
             statement.setString(1, username);
             statement.setString(2, password);
+            statement.setString(3, "");
             int result = statement.executeUpdate();   
          
             return !(result == 0);
@@ -76,6 +77,26 @@ public class UserServiceDB implements UserService {
             closeConnection();
         }
     }
+    
+    public UserDTO userRegister2(String username, String password)
+            throws  IOException, SQLException, NoSuchAlgorithmException {
+        try {
+            boolean registered = userRegister(username, password);
+            User us = null;
+            if(registered) {
+                us = getUser(username);
+            }
+            UserDTO dto = new UserDTO(registered, us);
+            return dto;
+        }
+        catch(SQLException e) {
+            return new UserDTO();
+        }
+        finally {
+            closeConnection();
+        }
+    }
+    
     
     private void initConnection() throws IOException {
         try {
@@ -96,5 +117,36 @@ public class UserServiceDB implements UserService {
         catch (Exception e) {
             System.err.println(e.getMessage());
          }
+    }
+
+    private User getUser(String username)
+         throws  IOException, SQLException, NoSuchAlgorithmException{
+        try {
+            User us = null;
+            String query;
+            PreparedStatement statement;
+            initConnection();
+
+            query = "select * from users "
+                    + "where username=?";
+            statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            ResultSet rs = statement.executeQuery();
+            
+            if (rs.next()) {
+                String un = rs.getString("username");
+                String pw = rs.getString("password");
+                us = new User(un, pw);
+                us.encryptPassword();
+            }
+            return us;
+        }
+        catch(SQLException e) {
+            return null;
+        }
+        finally {
+            closeConnection();
+        }
+        
     }
 }
