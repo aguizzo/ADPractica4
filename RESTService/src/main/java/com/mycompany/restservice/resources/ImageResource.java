@@ -89,8 +89,8 @@ public class ImageResource {
         boolean registered = dto.isOperationSucess();
         if (!registered) {
             return Response
-                .status(Response.Status.CONFLICT)
-                .entity("No se ha podido registrar la imagen en base de datos")
+                .status(Response.Status.BAD_REQUEST)
+                .entity("Alguno de los campos es incorrecto")
                 .build();
         }
         else{
