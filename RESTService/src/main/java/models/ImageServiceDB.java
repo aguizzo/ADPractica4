@@ -204,6 +204,30 @@ public class ImageServiceDB implements ImageService {
         }
     }
     
+    public boolean existsImage(int id)
+        throws  IOException, SQLException{
+        try {
+            Image im = null;
+            String query;
+            PreparedStatement statement;
+            initConnection();
+
+            query = "select * from images "
+                    + "where id=?";
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, id);
+            ResultSet rs = statement.executeQuery();
+            
+            return rs.next();
+        }
+        catch(SQLException e) {
+            return false;
+        }
+        finally {
+            closeConnection();
+        }
+    }
+    
     @Override
     public List<Image> getImageList() 
             throws  IOException, SQLException {
@@ -400,25 +424,11 @@ public class ImageServiceDB implements ImageService {
     }
     
     @Override
-    public boolean checkOwnership(int id, String uploader)
+    public boolean checkOwnership(String token)
         throws  IOException, SQLException{
         try {
-            Image im = null;
-            String query;
-            PreparedStatement statement;
-            initConnection();
-
-            query = "select uploader from images "
-                    + "where id=?";
-            statement = connection.prepareStatement(query);
-            statement.setInt(1, id);
-            ResultSet rs = statement.executeQuery();
-            
-            String owner = "";
-            if (rs.next()) {
-                owner = rs.getString("uploader");
-            }
-            return uploader.equals(owner);
+            final UserServiceDB uS = UserServiceDB.getInstance();
+            return uS.checkOwenership(token);
         }
         catch(SQLException e) {
             return false;

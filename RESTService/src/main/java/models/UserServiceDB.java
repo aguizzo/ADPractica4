@@ -108,6 +108,31 @@ public class UserServiceDB implements UserService {
         }
     }
     
+    public boolean checkOwenership(String token) 
+            throws  IOException, SQLException{
+        try {
+            String query;
+            PreparedStatement statement;
+            initConnection();
+            User us = null;
+            
+            query = "select * from users " +
+                        "where token= ?";
+            statement = connection.prepareStatement(query);
+            statement.setString(1, token);
+
+            ResultSet rs = statement.executeQuery();    
+         
+            return rs.next();
+            
+        }
+        catch(Exception e) {
+            return false;
+        }
+        finally {
+            closeConnection();
+        }
+    }
     
     private void initConnection() throws IOException {
         try {

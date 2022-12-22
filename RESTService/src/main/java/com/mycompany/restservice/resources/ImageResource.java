@@ -128,7 +128,6 @@ public class ImageResource {
      * @param description
      * @param keywords
      * @param author
-     * @param uploader, used for checking image ownership
      * @param captureDate
      * @param headers
      * @return
@@ -143,18 +142,28 @@ public class ImageResource {
         @FormParam("description") String description,
         @FormParam("keywords") String keywords,
         @FormParam("author") String author,
-        @FormParam("uploader") String uploader,
         @FormParam("captureDate") String captureDate,
         @Context HttpHeaders headers)
             throws Exception {
         try {
-            //Image image = iS.getImage(id);
             String token = headers.getRequestHeader("api_key").get(0);
             System.out.println("token: " + token);
-            Image im = new Image(title, description, keywords, author, uploader, 
-                captureDate, "", "");
+            if (token == null || token.isEmpty()) {
+                return Response
+                    .status(Response.Status.UNAUTHORIZED)
+                    .entity("Tienes que proveer una api-key")
+                    .build();
+            }
+            if(!iS.existsImage(id)) {
+                return Response
+                    .status(Response.Status.NOT_FOUND)
+                    .entity("La imagen no existe")
+                    .build();
+            }
+            boolean isOwner = iS.checkOwnership(token);
+            Image im = new Image(title, description, keywords, author, "", 
+               captureDate, "", "");
             im.setId(id);
-            boolean isOwner = iS.checkOwnership(id, uploader);
             if (isOwner) {
                 ImageDTO dto = iS.modifyImage2(im);
                 boolean modified = dto.isOperationSucess();
@@ -166,8 +175,8 @@ public class ImageResource {
                 }
                 else {
                     return Response
-                        .status(Response.Status.NOT_FOUND)
-                        .entity("La imagen no existe")
+                        .status(Response.Status.BAD_REQUEST)
+                        .entity("Algunos de los campos es incorrecto")
                         .build();
                 }
             }

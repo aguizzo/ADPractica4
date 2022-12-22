@@ -25,5 +25,5 @@ public interface ImageService {
     
     List<Image> searchByKeywords(String keywords) throws Exception;
     
-    public boolean checkOwnership(int id, String uploader) throws Exception;
+    public boolean checkOwnership(String token) throws Exception;
 }
