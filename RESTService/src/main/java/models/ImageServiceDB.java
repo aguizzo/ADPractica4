@@ -424,11 +424,11 @@ public class ImageServiceDB implements ImageService {
     }
     
     @Override
-    public boolean checkOwnership(String token)
+    public boolean checkOwnership(String token, String uploader)
         throws  IOException, SQLException{
         try {
             final UserServiceDB uS = UserServiceDB.getInstance();
-            return uS.checkOwenership(token);
+            return uS.checkOwenership(token, uploader);
         }
         catch(SQLException e) {
             return false;

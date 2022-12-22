@@ -147,20 +147,20 @@ public class ImageResource {
             throws Exception {
         try {
             String token = headers.getRequestHeader("api_key").get(0);
-            System.out.println("token: " + token);
             if (token == null || token.isEmpty()) {
                 return Response
                     .status(Response.Status.UNAUTHORIZED)
                     .entity("Tienes que proveer una api-key")
                     .build();
             }
-            if(!iS.existsImage(id)) {
+            Image image = iS.getImage(id);
+            if(image == null) {
                 return Response
                     .status(Response.Status.NOT_FOUND)
                     .entity("La imagen no existe")
                     .build();
             }
-            boolean isOwner = iS.checkOwnership(token);
+            boolean isOwner = iS.checkOwnership(token, image.getUploader());
             Image im = new Image(title, description, keywords, author, "", 
                captureDate, "", "");
             im.setId(id);
@@ -206,15 +206,24 @@ public class ImageResource {
     @DELETE
     @Produces(MediaType.TEXT_PLAIN)
     public Response deleteImage (@PathParam("id") int id,
-        @Context HttpHeaders headers
-        //@FormParam("uploader") String uploader
-    )   
-        //* @param uploader, used for checking image ownership
-        throws Exception {
+        @Context HttpHeaders headers) throws Exception {
         try {
-            //boolean isOwner = iS.checkOwnership(id, uploader);
-            //if (isOwner) {
-                String token = headers.getRequestHeader("api_key").get(0);
+            String token = headers.getRequestHeader("api_key").get(0);
+            if (token == null || token.isEmpty()) {
+                return Response
+                    .status(Response.Status.UNAUTHORIZED)
+                    .entity("Tienes que proveer una api-key")
+                    .build();
+            }
+            Image image = iS.getImage(id);
+            if(image == null) {
+                return Response
+                    .status(Response.Status.NOT_FOUND)
+                    .entity("La imagen no existe")
+                    .build();
+            }
+            boolean isOwner = iS.checkOwnership(token, image.getUploader());
+            if (isOwner) {
                 boolean deleted = iS.deleteImage(id);
                 if (deleted) {
                     return Response
@@ -223,24 +232,24 @@ public class ImageResource {
                 }
                 else {
                     return Response
-                        .status(Response.Status.NOT_FOUND)
-                        .entity("La imagen no existe")
+                        .status(Response.Status.INTERNAL_SERVER_ERROR)
                         .build();
                 }
-            /*}
+            }
             else {
                 return Response
                     .status(Response.Status.FORBIDDEN)
                     .entity("No eres el propietario de la imagen")
                     .build();
-            }*/
+            }
         }
         catch (Exception e) {
             return Response
                 .status(Response.Status.INTERNAL_SERVER_ERROR)
                 .build();
         }
-    }    
+    }
+        
 
     /**
      * GET method to search images by id
