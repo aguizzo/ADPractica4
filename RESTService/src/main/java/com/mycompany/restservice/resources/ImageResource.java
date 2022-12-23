@@ -58,7 +58,6 @@ public class ImageResource {
     * @param description 
     * @param keywords      
     * @param author 
-    * @param uploader 
     * @param captureDate     
     * @param filename     
     * @param fileInputStream     
@@ -74,18 +73,31 @@ public class ImageResource {
     public Response uploadImage (@FormDataParam("title") String title, 
         @FormDataParam("description") String description, 
         @FormDataParam("keywords") String keywords, 
-        @FormDataParam("author") String author, 
-        @FormDataParam("uploader") String uploader, 
+        @FormDataParam("author") String author,  
         @FormDataParam("capture") String captureDate,
         @FormDataParam("filename") String filename,
         @FormDataParam("file") InputStream fileInputStream,
         @FormDataParam("file") FormDataContentDisposition fileMetaData,
         @Context HttpHeaders headers)
-        throws Exception {
+        throws Exception {   
+        List<String> api_key = headers.getRequestHeader("api_key");
+            if (api_key == null) {
+                return Response
+                    .status(Response.Status.UNAUTHORIZED)
+                    .entity("Tienes que proveer una api-key")
+                    .build();
+            }
+        String token = api_key.get(0);
+        String uploader = iS.getUploader(token);
+        if (uploader == null) {
+            return Response
+                    .status(Response.Status.FORBIDDEN)
+                    .entity("La api-key no es correcta")
+                    .build();
+        }
         Image im = new Image(title, description, keywords, author, uploader, 
             captureDate, "", filename);
         ImageDTO dto = iS.imageRegister2(im);
-        String token = headers.getRequestHeader("api_key").get(0);
         boolean registered = dto.isOperationSucess();
         if (!registered) {
             return Response
@@ -146,13 +158,15 @@ public class ImageResource {
         @Context HttpHeaders headers)
             throws Exception {
         try {
-            String token = headers.getRequestHeader("api_key").get(0);
-            if (token == null || token.isEmpty()) {
+            
+            List<String> api_key = headers.getRequestHeader("api_key");
+            if (api_key == null) {
                 return Response
                     .status(Response.Status.UNAUTHORIZED)
                     .entity("Tienes que proveer una api-key")
                     .build();
             }
+            String token = api_key.get(0);
             Image image = iS.getImage(id);
             if(image == null) {
                 return Response
@@ -208,13 +222,14 @@ public class ImageResource {
     public Response deleteImage (@PathParam("id") int id,
         @Context HttpHeaders headers) throws Exception {
         try {
-            String token = headers.getRequestHeader("api_key").get(0);
-            if (token == null || token.isEmpty()) {
+            List<String> api_key = headers.getRequestHeader("api_key");
+            if (api_key == null) {
                 return Response
                     .status(Response.Status.UNAUTHORIZED)
                     .entity("Tienes que proveer una api-key")
                     .build();
             }
+            String token = api_key.get(0);
             Image image = iS.getImage(id);
             if(image == null) {
                 return Response

@@ -132,6 +132,36 @@ public class UserServiceDB implements UserService {
         }
     }
     
+    public String getAuthenticacitonInfo(String token) 
+            throws  IOException, SQLException{
+        try {
+            String query;
+            PreparedStatement statement;
+            initConnection();
+
+            query = "select * from users " +
+                        "where token= ?";
+            statement = connection.prepareStatement(query);
+            statement.setString(1, token);
+
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) { 
+                String username = rs.getString("username");
+                if (username.isEmpty())
+                    return null;
+                return username;
+            }
+            else
+                return null;
+        }
+        catch(Exception e) {
+            return null;
+        }
+        finally {
+            closeConnection();
+        }
+    }
+    
     private void initConnection() throws IOException {
         try {
             Class.forName("org.apache.derby.jdbc.ClientDriver");

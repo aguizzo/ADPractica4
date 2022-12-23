@@ -437,6 +437,20 @@ public class ImageServiceDB implements ImageService {
             closeConnection();
         }
     }
+    
+    public String getUploader(String token)
+        throws  IOException, SQLException{
+        try {
+            final UserServiceDB uS = UserServiceDB.getInstance();
+            return uS.getAuthenticacitonInfo(token);
+        }
+        catch(SQLException e) {
+            return null;
+        }
+        finally {
+            closeConnection();
+        }
+    }
 
     private Image createImage(ResultSet rs)
             throws SQLException {
